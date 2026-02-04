@@ -41,11 +41,6 @@ Manual edits
 - Added `ProducesResponseType` annotations.
 - Standardised route formatting and error bodies.
 
-Key commits (examples — replace with real SHAs)
-- 5719e0... “Copilot: scaffold Program.cs and enable Swagger”
-- a1b2c3... “Copilot: generate UsersController CRUD”
-- d4e5f6... “Copilot: add DataAnnotations to model and DTOs”
-
 ---
 
 ## Activity 2 — Debugging with Copilot
@@ -69,12 +64,6 @@ Accepted suggestions and outcomes
 Evidence
 
 - Branch: `feature/debugging-with-copilot`
-- PR: Activity 2 — Debugging with Copilot (link: <add PR URL>)
-- Commits:
-- b7c8d9... “Copilot: add pagination to GET users”
-- c0d1e2... “Copilot: normalise inputs and add try/catch”
-- f3a4b5... “Copilot: use TryUpdate for concurrency”
-- 9a8b7c... “Copilot: add IValidatableObject to DTOs”
 
 Testing notes
 
@@ -99,14 +88,6 @@ Accepted suggestions and outcomes
 - `ErrorHandlingMiddleware`: catches unhandled exceptions, returns 500 JSON.
 - `AuthenticationMiddleware`: validates `X-API-Key`; returns 401 for invalid/missing key.
 - Pipeline in `Program.cs`: error-handling first, authentication next, logging last.
-
-Evidence
-
-- Commits:
-- 1a2b3c... “Copilot: add request logging middleware”
-- 4d5e6f... “Copilot: add global error-handling middleware”
-- 7g8h9i... “Copilot: add authentication middleware”
-- j0k1l2... “Configure middleware pipeline order and Swagger”
 
 Testing notes
 
@@ -147,6 +128,6 @@ Testing notes
 
 - To run in GitHub Codespaces:
 - `dotnet restore && dotnet build`
-- `dotnet run --project UserManagementAPI --urls http://0.0.0.0:5000`
+- `ASPNETCORE_ENVIRONMENT=Development dotnet run --urls=http://0.0.0.0:5000`
 - Open `/swagger`
 - API key header for write operations: `X-API-Key: secret123` (configurable).
