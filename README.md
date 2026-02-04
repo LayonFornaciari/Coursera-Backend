@@ -99,3 +99,37 @@ This section will be updated with evidence as the project progresses.
 
 - Ensure repository is public and update the Grading Criteria evidence.
 - Submit the repository URL for peer review.
+
+## Copilot usage — Activity 1
+
+
+### Overview
+
+I enabled GitHub Copilot in a Codespace and used it to scaffold the API, generate CRUD endpoints, and suggest validation rules. I reviewed each suggestion, accepted the ones that met the project goals, and made small manual edits for consistency and clarity.
+
+### Prompts used and outcomes
+
+- “Create an ASP.NET Core Web API `Program.cs` using minimal hosting, add controllers, and enable Swagger in Development.”
+- Outcome: Copilot scaffolded service registration, `MapControllers`, and Swagger setup.
+- “Generate a `UsersController` with CRUD endpoints: GET (list/by id), POST, PUT, DELETE. Use `ApiController` and return proper status codes.”
+- Outcome: Copilot produced the controller skeleton with routes, consistent responses (`200`/`201`/`204`/`404`/`409`), and example payload shapes.
+- “Add DataAnnotations validation to `User`, `CreateUserRequest`, and `UpdateUserRequest` (required name/email, length limits, email format).”
+- Outcome: Copilot added `[Required]`, `[StringLength]`, and `[EmailAddress]` guidance, enabling automatic `400 Bad Request` responses via `[ApiController]`.
+- “Implement a thread‑safe in‑memory user store (`IUserStore`/`InMemoryUserStore`) using `ConcurrentDictionary`, including an email uniqueness check.”
+- Outcome: Copilot proposed the interface and a simple store with `GetAll`, `Get`, `Add`, `Update`, `Delete`, and `EmailExists`.
+- “Ensure POST returns `CreatedAtAction` and PUT/DELETE return `NoContent` when successful.”
+- Outcome: Copilot updated return types and status codes to align with REST conventions.
+
+### Enhancements accepted
+
+- Trim input fields on create/update to avoid whitespace issues.
+- Use `ProducesResponseType` annotations to document responses in Swagger.
+- Return `409 Conflict` when an email is already taken, both on create and update.
+- Return `404 NotFound` when a user id does not exist.
+- Keep controllers lean and move storage logic into `Services`.
+
+### Manual edits I made
+
+- Standardised route formatting and response bodies for conflicts and errors.
+- Clarified model/DTO names and file layout to match the repository structure.
+- Ensured consistent naming and casing across namespaces and folders.
