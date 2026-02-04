@@ -108,13 +108,7 @@ Testing notes
 
 ---
 
-## Links
-
-
-- Repository: <add repo URL>
-- PR (Activity 2 — Debugging with Copilot): <add PR URL>
-- PR (Activity 3 — Middleware): <add PR URL or list commits>
-- Files:
+## Files:
 - `Controllers/UsersController.cs`
 - `Models/*.cs`
 - `Services/*.cs`
@@ -124,7 +118,6 @@ Testing notes
 ---
 
 ## Reviewer notes
-
 
 - To run in GitHub Codespaces:
 - `dotnet restore && dotnet build`
