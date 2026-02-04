@@ -16,17 +16,21 @@ public class InMemoryUserStore : IUserStore
 
     public bool Update(User user)
     {
-        if (!_users.ContainsKey(user.Id)) return false;
-        _users[user.Id] = user;
-        return true;
+        // Use TryUpdate for concurrency safety
+
+        if (!_users.TryGetValue(user.Id, out var current))
+            return false;
+
+        return _users.TryUpdate(user.Id, user, current);
     }
 
     public bool Delete(Guid id) => _users.TryRemove(id, out _);
 
     public bool EmailExists(string email, Guid? excludeUserId = null)
     {
+        var normalised = email.Trim().ToLowerInvariant();
         return _users.Values.Any(u =>
-            u.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
+            u.Email.Equals(normalised, StringComparison.Ordinal) &&
             (!excludeUserId.HasValue || u.Id != excludeUserId.Value));
     }
 }

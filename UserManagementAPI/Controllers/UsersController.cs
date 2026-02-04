@@ -20,11 +20,25 @@ public class UsersController : ControllerBase
 
     // GET /api/users
 
+    // Supports pagination via ?page=1&pageSize=50 (pageSize capped at 100)
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<User>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<User>> GetAll()
+    public ActionResult<IEnumerable<User>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        return Ok(_store.GetAll());
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 50 : pageSize;
+        pageSize = pageSize > 100 ? 100 : pageSize;
+
+        var all = _store.GetAll();
+        var total = all.Count();
+        var users = all.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        Response.Headers.TryAdd("X-Page", page.ToString());
+        Response.Headers.TryAdd("X-PageSize", pageSize.ToString());
+        Response.Headers.TryAdd("X-Total-Count", total.ToString());
+        Response.Headers.TryAdd("X-Count", users.Count.ToString());
+
+        return Ok(users);
     }
 
     // GET /api/users/{id}
@@ -45,30 +59,42 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public ActionResult<User> Create([FromBody] CreateUserRequest request)
     {
-        // [ApiController] auto-validates ModelState using DataAnnotations
+        try
 
-        if (_store.EmailExists(request.Email))
         {
-            return Conflict(new { message = "Email already exists." });
+            // Normalise inputs
+
+            var name = (request.Name ?? string.Empty).Trim();
+            var email = (request.Email ?? string.Empty).Trim().ToLowerInvariant();
+
+            if (_store.EmailExists(email))
+            {
+                return Conflict(new { message = "Email already exists." });
+            }
+
+            var user = new User
+
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                Email = email,
+                CreatedAt = DateTime.UtcNow
+
+            };
+
+            if (!_store.Add(user))
+            {
+                _logger.LogError("Failed to add user with id {Id}", user.Id);
+                return Problem("Failed to create user.", statusCode: StatusCodes.Status500InternalServerError);
+            }
+
+            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
         }
-
-        var user = new User
-
+        catch (Exception ex)
         {
-            Id = Guid.NewGuid(),
-            Name = request.Name.Trim(),
-            Email = request.Email.Trim(),
-            CreatedAt = DateTime.UtcNow
-
-        };
-
-        if (!_store.Add(user))
-        {
-            _logger.LogError("Failed to add user with id {Id}", user.Id);
-            return Problem("Failed to create user.", statusCode: StatusCodes.Status500InternalServerError);
+            _logger.LogError(ex, "Unhandled exception during Create");
+            return Problem("An unexpected error occurred.", statusCode: StatusCodes.Status500InternalServerError);
         }
-
-        return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
     }
 
     // PUT /api/users/{id}
@@ -79,24 +105,38 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public IActionResult Update(Guid id, [FromBody] UpdateUserRequest request)
     {
-        var existing = _store.Get(id);
-        if (existing is null) return NotFound();
+        try
 
-        if (_store.EmailExists(request.Email, excludeUserId: id))
         {
-            return Conflict(new { message = "Email already exists for another user." });
+            var existing = _store.Get(id);
+            if (existing is null) return NotFound();
+
+            // Normalise inputs
+
+            var name = (request.Name ?? string.Empty).Trim();
+            var email = (request.Email ?? string.Empty).Trim().ToLowerInvariant();
+
+            if (_store.EmailExists(email, excludeUserId: id))
+            {
+                return Conflict(new { message = "Email already exists for another user." });
+            }
+
+            existing.Name = name;
+            existing.Email = email;
+
+            if (!_store.Update(existing))
+            {
+                _logger.LogError("Failed to update user with id {Id}", id);
+                return Problem("Failed to update user.", statusCode: StatusCodes.Status500InternalServerError);
+            }
+
+            return NoContent();
         }
-
-        existing.Name = request.Name.Trim();
-        existing.Email = request.Email.Trim();
-
-        if (!_store.Update(existing))
+        catch (Exception ex)
         {
-            _logger.LogError("Failed to update user with id {Id}", id);
-            return Problem("Failed to update user.", statusCode: StatusCodes.Status500InternalServerError);
+            _logger.LogError(ex, "Unhandled exception during Update for {Id}", id);
+            return Problem("An unexpected error occurred.", statusCode: StatusCodes.Status500InternalServerError);
         }
-
-        return NoContent();
     }
 
     // DELETE /api/users/{id}
@@ -105,15 +145,24 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult Delete(Guid id)
     {
-        var existing = _store.Get(id);
-        if (existing is null) return NotFound();
+        try
 
-        if (!_store.Delete(id))
         {
-            _logger.LogError("Failed to delete user with id {Id}", id);
-            return Problem("Failed to delete user.", statusCode: StatusCodes.Status500InternalServerError);
-        }
+            var existing = _store.Get(id);
+            if (existing is null) return NotFound();
 
-        return NoContent();
+            if (!_store.Delete(id))
+            {
+                _logger.LogError("Failed to delete user with id {Id}", id);
+                return Problem("Failed to delete user.", statusCode: StatusCodes.Status500InternalServerError);
+            }
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception during Delete for {Id}", id);
+            return Problem("An unexpected error occurred.", statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 }
