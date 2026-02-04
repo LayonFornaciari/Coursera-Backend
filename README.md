@@ -23,7 +23,7 @@ The API supports TechHive Solutions’ internal HR/IT needs with create, read, u
 2) In the terminal:
 - `dotnet restore`
 - `dotnet build`
-- `dotnet run --project UserManagementAPI --urls http://0.0.0.0:5000`
+- `ASPNETCORE_ENVIRONMENT=Development dotnet run --urls=http://0.0.0.0:5000`
 3) Open the forwarded URL and browse to `/swagger`.
 
 Environment/config:
@@ -176,7 +176,7 @@ Manual edits I made
 ## Grading evidence (25 pts total)
 
 - [x] GitHub repository created (5 pts)
-- Public repository URL: <add URL here>
+- Public repository URL: <https://github.com/LayonFornaciari/Coursera-Backend>
 - Clear structure and README.
 - [x] CRUD endpoints implemented (5 pts)
 - See `UserManagementAPI/Controllers/UsersController.cs`
