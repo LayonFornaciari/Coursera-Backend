@@ -133,3 +133,25 @@ I enabled GitHub Copilot in a Codespace and used it to scaffold the API, generat
 - Standardised route formatting and response bodies for conflicts and errors.
 - Clarified model/DTO names and file layout to match the repository structure.
 - Ensured consistent naming and casing across namespaces and folders.
+
+## Activity 2 — Bugs Found and Fixed (Copilot-assisted)
+
+- Validation gaps:
+- Added `IValidatableObject` to DTOs to reject whitespace-only names.
+- Normalised emails (trim + lowercase) for reliable uniqueness checks.
+
+- Robust status codes:
+- Confirmed `404 NotFound` for missing IDs.
+- `409 Conflict` on duplicate emails for create/update.
+- `400 Bad Request` for invalid DTOs via `[ApiController]`.
+
+- Exception handling:
+- Wrapped create/update/delete in try/catch; return `Problem(500)` on unhandled exceptions.
+- (Global error handling will be implemented as middleware in Activity 3.)
+
+- Performance/UX:
+- Added pagination to `GET /api/users` via `?page=&pageSize=` with safe limits.
+- Exposed pagination info in response headers: `X-Page`, `X-PageSize`, `X-Count`.
+
+- Evidence:
+- See `docs/copilot-notes.md` and the PR “Activity 2 — Debugging with Copilot”.
